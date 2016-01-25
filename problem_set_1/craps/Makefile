@@ -38,9 +38,6 @@ distclean:
 pack: clean
 	echo tar -czvf ${USER}-lab1-sumbit.tar.gz *.c *.h Makefile
 
-answers:
-	cd answers && make all
-
 .PHONY: all clean pack
 
 %.o: %.c
