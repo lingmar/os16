@@ -30,12 +30,16 @@ shooter: shooter.o common.o
 
 clean:
 	$(RM) *~ *.o *.d
+	cd answers && make clean
 
 distclean:
 	$(RM) craps shooter
 
 pack: clean
 	echo tar -czvf ${USER}-lab1-sumbit.tar.gz *.c *.h Makefile
+
+answers:
+	cd answers && make all
 
 .PHONY: all clean pack
 
