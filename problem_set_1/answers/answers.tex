@@ -59,7 +59,7 @@
     A system call interface is an abstraction for a given programming language, and acts as a link to the actual system calls. The caller need not know exactly how a system call is implemented, only how to use it via the interface and what the result is when making the system call.
   \item \textit{A common pattern when using system calls is for the caller to first allocate storage and then pass a pointer to this storage to the system call - why? } \\ 
     It gives the caller a choice in where to store the result of the system call.
-  \item \textit{Some system calls are blocking, i.e., the caller will block until some condition is met. How can blocking system calls be implemented efficiently?} \\
+  \item \textit{Some system calls are blocking, i.e., the caller will block until some condition is met. How can blocking system calls be implemented?} \\
     {\color{red} ????}
   
 \end{enumerate}
@@ -116,10 +116,11 @@
 \section{Signals}
 \begin{enumerate}
   \item \textit{What is the purpose of signals?} \\
-    
+    To communicate between signals.
   \item \textit{What is a signal handler?} \\
-    
+    A signal handler is a function that handles a specific type of signal. If no specific signal handler is registered, the default signal handler handles the signal.
   \item \textit{What are the limitations of signals?} \\
+    A signal contains very little information.
 \end{enumerate}
 
 \section{Pipes}
