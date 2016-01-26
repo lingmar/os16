@@ -29,70 +29,97 @@
 
 \section{Operating systems}
 \begin{enumerate}
-  \item \textit{What is the overall purpose of an operating system?}
+  \item \textit{What is the overall purpose of an operating system?} 
+    An important task of the operating system is to schedule user and system processes and handle commands from the user. When scheduling processes, the operating system can create the appearance that processes are run concurrently. It is the layer between the user space and the hardware.
   \item \textit{How can the operating system make several programs execute seemingly "at the same time"?}
+    The operating system can swap which process is currently executed very quickly. This creates the appearance that the processes are run simultaneously.
 \end{enumerate}
 
 \section{Processes}
 \begin{enumerate}
   \item \textit{What is the difference between a program and a process?}
+    A program is a set of instructions which is in human readable format. It is a passive entity stored on secondary storage. In comparison, a process is an active entity that needs resources such as memory and CPU time. A process is a program loaded into memory, either executing or waiting.
   \item \textit{What does the acronym PCB stand for?}
+    Process control block.
   \item \textit{Whats the purpose of the PCB?}
-  
+    The purpose is to store information needed to manage the process, such as the pid of the process. 
 \end{enumerate}
 
 \section{System calls}
 \begin{enumerate}
   \item \textit{What is the overall purpose of the system call concept? }
+    The purpose is to interact directly with the operating system. It provides an interface to the services made available by an operating system.
   \item \textit{Why are exceptions important when implementing system calls?}
+    System calls are initiated using exceptions. 
   \item \textit{Why are interrupts important when implementing system calls?}
+    System calls generate an interrupt, which invokes the attention of the operating system, so that the system call can be executed.
   \item \textit{Why can't we simply use ordinary function calls when implementing system calls?}
+    A call to an ordinary function is a call to a piece of code in user space, and does not have the same acces rights as a system call. So when it is necessary to execute some tasks which must be performed by the operating system, a system call is needed.
   \item \textit{What is the difference between the system call interface and the actual system calls?}
-  \item \textit{A common pattern when using system calls is for the caller to first allocate storage and then pass a pointer to this storage to the system call - why?}
-  \item \textit{Some system calls are blocking, i.e., the caller will block until some condition is met. How can blocking system calls be implemented efficiently?}
+    A system call interface is an abstraction for a given programming language, and acts as a link to the actual system calls. The caller need not know exactly how a system call is implemented, only how to use it via the interface and what the result is when making the system call.
+  \item \textit{A common pattern when using system calls is for the caller to first allocate storage and then pass a pointer to this storage to the system call - why? } \\ 
+    It gives the caller a choice in where to store the result of the system call.
+  \item \textit{Some system calls are blocking, i.e., the caller will block until some condition is met. How can blocking system calls be implemented efficiently?} \\
+    {\color{red} ????}
   
 \end{enumerate}
 
 \section{fork()}
 \begin{enumerate}
-  \item \textit{What is the purpose of the fork() system call?}
-  \item \textit{How many times does fork() return?}
-  \item \textit{What are the possible return values of fork()?}
-  \item \textit{What actions must be taken by the kernel when executing the fork() system call?}
+  \item \textit{What is the purpose of the fork() system call?} \\
+    The fork() system call creates a new process (a child process).
+  \item \textit{How many times does fork() return?} \\
+    Twice if a succesful fork(), else once. 
+  \item \textit{What are the possible return values of fork()?} \\
+    In the case of a successful creation of a new process, fork() returns the pid of the created process in the parent process, and in 0 in the child process. If fork() fails to create a new process, -1 is returned in the parent process.
+  \item \textit{What actions must be taken by the kernel when executing the fork() system call?} \\
+    The kernel creates a PCB and allocates memory for the child process. It then puts a copy of the parent process in the allocated memory, and schedules the parent and child processes to execute "concurrently".
   
 \end{enumerate}
 
 \section{exit()}
 \begin{enumerate}
-  \item \textit{What is the purpose of the exit() system call?}
-  \item \textit{What actions must be taken by the kernel when exectuting the exit() system call?}
-  \item \textit{If an exit status is given to exit(), how is this information handled by the kernel?}
-  \item \textit{How is exit() related to the  "zombie" process state?}
+  \item \textit{What is the purpose of the exit() system call?} \\
+    The purpose of exit() is to exit (terminate) a process.
+  \item \textit{What actions must be taken by the kernel when exectuting the exit() system call?} \\
+    The return value of exit() must be stored in the PCB since another process might need to read the return value. The kernel also deallocates the allocated memory of the process. 
+  \item \textit{If an exit status is given to exit(), how is this information handled by the kernel?} \\
+    The exit status is stored in the PCB.
+  \item \textit{How is exit() related to the  "zombie" process state?} \\
+    The kernel cannot deallocate the PCB until another process has read the return value of exit(). Until the return value of an exited process has been read, it is said to be a zombie process.
   
 \end{enumerate}
 
 \section{wait()}
 \begin{enumerate}
-  \item \textit{What is the purpose of the wait() system call?}
-  \item \textit{What are the possible return values of wait()?}
-  \item \textit{How can the exit status of a terminated process be retrieved using the wait() system call?}
-  \item \textit{Hos is wait() related to the  "zombie" process state?}
-  
+  \item \textit{What is the purpose of the wait() system call?} \\
+    The purpose of wait() is to read the return value of a child process.
+  \item \textit{What are the possible return values of wait()?} \\
+    The PID of the exited child process is returned.
+  \item \textit{How can the exit status of a terminated process be retrieved using the wait() system call?} \\
+    The exit status is written to the address pointed to by the argument given to wait().
+  \item \textit{Hos is wait() related to the  "zombie" process state?} \\
+    Since wait() reads the exit status of the exited process, it "de-zombifies" the zombie process.
 \end{enumerate}
 
 \section{exec()}
 \begin{enumerate}
-  \item \textit{What is the purpose of the exec() family of system calls?}
-  \item \textit{When calling a function or a system call, normally you will return back to the caller again. Is this true for the exec() family of system calls (motivate)?}
-  \item \textit{If a parent process creates a pipe, then calls fork() and the child calls exec - will the child be able to access the pipe?}
+  \item \textit{What is the purpose of the exec() family of system calls?} \\
+    The purpose of exec() is to replace the executing process with a new program.
+  \item \textit{When calling a function or a system call, normally you will return back to the caller again. Is this true for the exec() family of system calls (motivate)?} \\
+    The exec() functions only returns if an error occurs. Otherwise it replaces the old process with the new one, so there is no process to which to return a value.
+  \item \textit{If a parent process creates a pipe, then calls fork() and the child calls exec - will the child be able to access the pipe?} \\
+    Yes, the parent process and the child can communicate via the pipe.
 
 \end{enumerate}
 
 \section{Signals}
 \begin{enumerate}
-  \item \textit{What is the purpose of signals?}
-  \item \textit{What is a signal handler?}
-  \item \textit{What are the limitations of signals?}
+  \item \textit{What is the purpose of signals?} \\
+    
+  \item \textit{What is a signal handler?} \\
+    
+  \item \textit{What are the limitations of signals?} \\
 \end{enumerate}
 
 \section{Pipes}
