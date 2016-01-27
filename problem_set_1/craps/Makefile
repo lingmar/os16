@@ -30,7 +30,6 @@ shooter: shooter.o common.o
 
 clean:
 	$(RM) *~ *.o *.d
-	cd answers && make clean
 
 distclean:
 	$(RM) craps shooter

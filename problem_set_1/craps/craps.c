@@ -22,51 +22,59 @@
 
 int main(int argc, char *argv[])
 {
-	int i, seed;
+    int i, seed;
 
-        /* TODO: Use the following variables in the exec system call. Using the
-	 * function sprintf and the arg1 variable you can pass the id parameter
-	 * to the children
-	 */
-/*
-	char arg0[] = "./shooter";
-	char arg1[10];
-	char *args[] = {arg0, arg1, NULL};
-*/
-	/* TODO: initialize the communication with the players */
-	for (i = 0; i < NUM_PLAYERS; i++) {
+    /* TODO: Use the following variables in the exec system call. Using the
+     * function sprintf and the arg1 variable you can pass the id parameter
+     * to the children
+     */
+    /*
+      char arg0[] = "./shooter";
+      char arg1[10];
+      char *args[] = {arg0, arg1, NULL};
+    */
+    /* TODO: initialize the communication with the players */
+    for (i = 0; i < NUM_PLAYERS; i++) {
 
-	}
+    }
 
-	for (i = 0; i < NUM_PLAYERS; i++) {
-		/* TODO: spawn the processes that simulate the players */
-	}
+    pid_t pid;
+    for (i = 0; i < NUM_PLAYERS; i++) {
+        /* TODO: spawn the processes that simulate the players */
+        
+        pid = fork();
+        if (pid == -1)
+            printf("Something went wrong\n");
+        else if (pid == 0)
+            shooter(i, -666, 666);
+        
+    }
 
-	seed = time(NULL);
-	for (i = 0; i < NUM_PLAYERS; i++) {
-		seed++;
-		/* TODO: send the seed to the players */
-	}
+    seed = time(NULL);
+    for (i = 0; i < NUM_PLAYERS; i++) {
+        seed++;
+        /* TODO: send the seed to the players */
+    }
 
-	/* TODO: get the dice results from the players, find the winner */
-	for (i = 0; i < NUM_PLAYERS; i++) {
+    /* TODO: get the dice results from the players, find the winner */
+    for (i = 0; i < NUM_PLAYERS; i++) {
 
-	}
-	printf("master: player %d WINS\n", winner);
+    }
+    printf("master: player %d WINS\n", winner);
 
-	/* TODO: signal the winner */
+    /* TODO: signal the winner */
 
-	/* TODO: signal all players the end of game */
-	for (i = 0; i < NUM_PLAYERS; i++) {
+    /* TODO: signal all players the end of game */
+    for (i = 0; i < NUM_PLAYERS; i++) {
 
-	}
+    }
 
-	printf("master: the game ends\n");
+    printf("master: the game ends\n");
 
-	/* TODO: cleanup resources and exit with success */
-	for (i = 0; i < NUM_PLAYERS; i++) {
+    /* TODO: cleanup resources and exit with success */
+    for (i = 0; i < NUM_PLAYERS; i++) {
 
-	}
+    }
 
-	return 0;
+    return 0;
 }
