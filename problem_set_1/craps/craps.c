@@ -72,8 +72,11 @@ int main(int argc, char *argv[])
     printf("master: the game ends\n");
 
     /* TODO: cleanup resources and exit with success */
+    int result;
     for (i = 0; i < NUM_PLAYERS; i++) {
-
+        int pid = wait(&result);
+        if (pid == -1)
+            printf("Something went wrong!\n");
     }
 
     return 0;

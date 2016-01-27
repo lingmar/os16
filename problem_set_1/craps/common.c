@@ -93,7 +93,9 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr)
 		id, (long)pid);
 
 	/* TODO: free resources and exit with success */
+        printf("Entering sleep\n");
         sleep(55);
+        printf("Exiting sleep\n");
 	exit(EXIT_SUCCESS);
 }
 
