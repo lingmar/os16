@@ -60,7 +60,7 @@
   \item \textit{A common pattern when using system calls is for the caller to first allocate storage and then pass a pointer to this storage to the system call - why? } \\ 
     It gives the caller a choice in where to store the result of the system call.
   \item \textit{Some system calls are blocking, i.e., the caller will block until some condition is met. How can blocking system calls be implemented?} \\
-    {\color{red} ????}
+   One way is to put the process that used the blocking system call in a queue, waiting for the condition to be met. Meanwhile, another process can be executed. When the previous mentioned condition is met, an interrupt occurs, and the waiting process and the current executing process are swapped, and the waiting process starts executing again. 
   
 \end{enumerate}
 
@@ -125,35 +125,58 @@
 
 \section{Pipes}
 \begin{enumerate}
-  \item \textit{What is a pipe?}
-  \item \textit{How are file descriptors used together with pipes?}
-  \item \textit{How do we create a pipe?}
-  \item \textit{How can we make two processes share a pipe in order to communicate with each other?}
-  \item \textit{How do we read data from a pipe?}
-  \item \textit{What happens if we read from a pipe with no data?}
-  \item \textit{What happens if we read from a pipe with no writers?}
-  \item \textit{How do we write data to a pipe?}
-  \item \textit{What happens if we write to a full pipe?}
-  \item \textit{What happens if we write to pipe with no readers?}
-  \item \textit{Why is it a good practice to all ways close unused file descriptors?}
+  \item \textit{What is a pipe?}\\
+    A pipe is a connection between two I/O-obejcts. 
+  \item \textit{How are file descriptors used together with pipes?}\\
+    A file descriptor identifies an I/O object in the kernel, and a pipe is a special kernel object that is basically just a pair of file descriptors. 
+  \item \textit{How do we create a pipe?}\\
+   Using the system call pipe(int arg[2]), where arg[2] is an int array with two elements.
+  \item \textit{How can we make two processes share a pipe in order to communicate with each other?}\\
+    Pipe first, then fork.
+  \item \textit{How do we read data from a pipe?}\\
+    Using the system call read().
+    \begin{enumerate}
+    \item \textit{What happens if we read from a pipe with no data?}\\
+      read() blocks until there is data to read.
+    \item \textit{What happens if we read from a pipe with no writers?}\\
+      The pipe will see end-of-file, and return 0. There's nothing left to read.
+    \end{enumerate}
+  \item \textit{How do we write data to a pipe?}\\
+    Using system call write().
+    \begin{enumerate}
+    \item \textit{What happens if we write to a full pipe?}\\
+      write() blocks until a sufficient amount of data has been read from the pipe, and the write() can be completed.
+    \item \textit{What happens if we write to pipe with no readers?}\\
+      write() sends a signal SIGPIPE to the caller.
+    \end{enumerate}
+  \item \textit{Why is it a good practice to all ways close unused file descriptors?}\\
+    It's important that the reader can detect the end-of-file, which it cannot if there are open writers. Therefore, it is important that the reader closes its unused "pipe write" end.  
+    The opposite is true as well (the writer must close its "pipe read" end), since we need to be able to recieve the SIGPIPE signal in case there are no readers. 
+    
 \end{enumerate}
 
 \section{dup2()}
 \begin{enumerate}
-  \item \textit{What is dup2() doing to file descriptors?}
-  \item \textit{How can this be useful?}
+  \item \textit{What is dup2() doing to file descriptors?} \\
+    dup2() takes two file descriptions as arguments. It makes a copy of the first one, and stores the copy in the second one. 
+  \item \textit{How can this be useful?} \\
+    If you want to redirect for example input or output of a process. 
 \end{enumerate}
 
 \section{Hidden state}
-\begin{enumerate}
-  \item \textit{ How is it possible for rand() to return different values on consequitve calls?}
-  \item \textit{A parent process calls srand() to seed the pseduo random generator (PRNG) and then uses fork() to create a number of child processes. Each child generates a sequence of "random" number by calling rand(). Can you make any predictions (motivate) about the sequences?}
+\begin{enumerate} 
+  \item \textit{ How is it possible for rand() to return different values on consequitve calls?} \\
+    The value used to compute the return value is updated every time rand() is called. 
+  \item \textit{A parent process calls srand() to seed the pseduo random generator (PRNG) and then uses fork() to create a number of child processes. Each child generates a sequence of "random" number by calling rand(). Can you make any predictions (motivate) about the sequences?} \\
+    {\color{read} TODO}
+    
   
 \end{enumerate}
 
 \section{Reentrant code}
 \begin{enumerate}
 \item \textit{What is meant by reentrant code?}
+      {\color{read} TODO}
 \end{enumerate}
 
 
