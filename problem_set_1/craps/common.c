@@ -22,7 +22,7 @@
 volatile sig_atomic_t winner = 0;
 /* TODO: Change this to 0 to make the children spin in the for loop before they
    receive the SIGUSR2 signal */
-volatile sig_atomic_t results = 1;
+volatile sig_atomic_t results = 0;
 
 /**
  * end_handler - handle the SIGUSR2 signal, the player will receive
@@ -31,13 +31,16 @@ volatile sig_atomic_t results = 1;
  */
 void end_handler(int signum)
 {
-	/* TODO: Check that the signum is indeed SIGUSR2 */
-	
-	/* TODO: "leave the game" make the appropriate changes to let the
-	   current process exit*/
+  /* TODO: Check that the signum is indeed SIGUSR2 */
+  if (signum == SIGUSR2){
 
-	signal(signum, end_handler);
+  /* TODO: "leave the game" make the appropriate changes to let the
+      current process exit*/
+    results = 1;
+    signal(signum, end_handler); 
+  }
 }
+
 
 /**
  * win_handler - handle the SIGUSR1 signal, player will receive the SIGUSR1 when
@@ -46,12 +49,14 @@ void end_handler(int signum)
  */
 void win_handler(int signum)
 {
-	/* TODO - Check that the signum is indeed SIGUSR1 */
+  /* TODO - Check that the signum is indeed SIGUSR1 */
+  if (signum == SIGUSR1) {
+  /* TODO - this player is the winner, make the appropriate changes
+     upon reception of this singal */
+    winner = 1;
 
-	/* TODO - this player is the winner, make the appropriate changes
-	   upon reception of this singal */
-
-	signal(signum, win_handler);
+    signal(signum, win_handler);  
+  }
 }
 
 
@@ -63,47 +68,50 @@ void win_handler(int signum)
  */
 void shooter(int id, int seed_fd_rd, int score_fd_wr)
 {
-	pid_t pid;
-	int score, seed = 0;
+  
+  pid_t pid;
+  int score, seed = 0;
 
-	/* TODO: Install SIGUSR1 handler */
+  /* TODO: Install SIGUSR1 handler */
+  signal(SIGUSR1, win_handler);
 
-	/* TODO: Install SIGUSR2 handler */
+  /* TODO: Install SIGUSR2 handler */
+  signal(SIGUSR2, end_handler);
 
+  pid = getpid();
+  fprintf(stderr, "player %d: I'm in this game (PID = %ld)\n",
+	  id, (long)pid);
 
-	pid = getpid();
-	fprintf(stderr, "player %d: I'm in this game (PID = %ld)\n",
-		id, (long)pid);
+  /* TODO: roll the dice, but before that, get a seed from the parent */
+  read(seed_fd_rd, &seed, sizeof(int));
+  close(seed_fd_rd);
+  
 
-	/* TODO: roll the dice, but before that, get a seed from the parent */
-	read(seed_fd_rd, &seed, sizeof(int));
-	close(seed_fd_rd);
-
-	srand(seed);
-	score = rand() % 10000;
+  srand(seed);
+  score = rand() % 10000;
 	
-	fprintf(stderr, "player %d: I scored %d (PID = %ld)\n", id, score, (long)pid);
-	/* TODO: send my score back */
-	write(score_fd_wr, &score, sizeof(int));
-	close(score_fd_wr);	
+  fprintf(stderr, "player %d: I scored %d (PID = %ld)\n", id, score, (long)pid);
+  /* TODO: send my score back */
+  write(score_fd_wr, &score, sizeof(int));
+  close(score_fd_wr);
+  
+ 
+  /* spin while I wait for the results */
+  while (!results) ;  
 
+  if (winner)
+    fprintf(stderr, "player %d: Walking away rich\n", id);
 
-	/* spin while I wait for the results */
-	while (!results) ;
+  fprintf(stderr, "player %d: Leaving the game (PID = %ld)\n",
+	  id, (long)pid);
 
-	if (winner)
-		fprintf(stderr, "player %d: Walking away rich\n", id);
-
-	fprintf(stderr, "player %d: Leaving the game (PID = %ld)\n",
-		id, (long)pid);
-
-	/* TODO: free resources and exit with success */
+  /* TODO: free resources and exit with success */
 	
-        /*printf("Entering sleep\n");
-        sleep(55);
-        printf("Exiting sleep\n");
-	*/
-	exit(EXIT_SUCCESS);
+  /* printf("Entering sleep\n");
+  sleep(55);
+  printf("Exiting sleep\n");*/
+  
+  exit(EXIT_SUCCESS);
 }
 
 /**
@@ -115,13 +123,13 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr)
  */
 void waitstat(pid_t pid, int status)
 {
-	if (WIFEXITED(status))
-		fprintf(stderr, "Child with PID = %ld terminated normally, exit"
-			" status = %d\n", (long)pid, WEXITSTATUS(status));
-	else {
-		fprintf(stderr, "%s: Internal error: Unhandled case, PID = %ld,"
-			" status = %d\n", __func__, (long)pid, status);
-		exit(1);
-	}
-	fflush(stderr);
+  if (WIFEXITED(status))
+    fprintf(stderr, "Child with PID = %ld terminated normally, exit"
+	    " status = %d\n", (long)pid, WEXITSTATUS(status));
+  else {
+    fprintf(stderr, "%s: Internal error: Unhandled case, PID = %ld,"
+	    " status = %d\n", __func__, (long)pid, status);
+    exit(1);
+  }
+  fflush(stderr);
 }
