@@ -18,6 +18,7 @@
 #include <sys/wait.h>
 
 #include "common.h"
+#include "system_calls.h"
 
 /* These flags control the termination of the main loop and indicate the winner. */
 volatile sig_atomic_t winner = 0;
@@ -39,8 +40,8 @@ void end_handler(int signum)
     /* TODO: "leave the game" make the appropriate changes to let the
        current process exit*/
     results = 1;
-    
-    signal(signum, end_handler);
+
+    Signal_exit_on_failure(signum, end_handler);
 }
 
 /**
@@ -58,7 +59,7 @@ void win_handler(int signum)
        upon reception of this singal */
     winner = 1;
     
-    signal(signum, win_handler);
+    Signal_exit_on_failure(signum, win_handler);
 }
 
 
@@ -73,27 +74,30 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr) {
     int score, seed = 0;
 
     /* TODO: Install SIGUSR1 handler */
-    signal(SIGUSR1, win_handler);
-    
     /* TODO: Install SIGUSR2 handler */
-    signal(SIGUSR2, end_handler);
+    if (signal(SIGUSR1, win_handler) == SIG_ERR ||
+        signal(SIGUSR2, end_handler)) {
 
+        perror("Error using signal(). Exiting.");
+        exit(EXIT_FAILURE);
+    }
+    
     pid = getpid();
     fprintf(stderr, "player %d: I'm in this game (PID = %ld)\n",
             id, (long)pid);
 
     /* TODO: roll the dice, but before that, get a seed from the parent */
-    read(seed_fd_rd, &seed, sizeof(int));
+    Read_exit_on_failure(seed_fd_rd, &seed, sizeof(int));
     
-    close(seed_fd_rd);
+    Close_exit_on_failure(seed_fd_rd);
         
     srand(seed);
     score = rand() % 10000;
 	
     fprintf(stderr, "player %d: I scored %d (PID = %ld\n", id, score, (long)pid);
     /* TODO: send my score back */
-    write(score_fd_wr, &score, sizeof(int));
-    close(score_fd_wr);
+    Write_exit_on_failure(score_fd_wr, &score, sizeof(int));
+    Close_exit_on_failure(score_fd_wr);
         
     /* spin while I wait for the results */
     while (!results) ;
@@ -103,7 +107,7 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr) {
 
     fprintf(stderr, "player %d: Leaving the game (PID = %ld)\n",
             id, (long)pid);
-
+    
     /* TODO: free resources and exit with success */
     
     exit(EXIT_SUCCESS);

@@ -19,12 +19,12 @@
 #include <sys/wait.h> /* waitpid() */
 
 #include "common.h"
+#include "system_calls.h"
 
-#define WRITE_FD(i) (2 * i + 1)
-#define READ_FD(i) (2 * i)
+#define Write_fd(i) (2 * (i) + 1)
+#define Read_fd(i) (2 * (i))
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int i, seed;
 
     /* TODO: Use the following variables in the exec system call. Using the */
@@ -39,13 +39,8 @@ int main(int argc, char *argv[])
     int pfds_score[2*NUM_PLAYERS];
     
     for (i = 0; i < NUM_PLAYERS; i++) {
-        printf("File %s line %d\n", __FILE__, __LINE__);
-        
-        if (pipe(&(pfds_seed[2 * i])) < 0 ||
-            pipe(&(pfds_score[2 * i])) < 0) {
-            perror("Something went wrong with pipe()");
-            exit(EXIT_FAILURE);
-        }
+        Pipe_exit_on_failure(&(pfds_seed[2 * i]));
+        Pipe_exit_on_failure(&(pfds_score[2 * i]));
     }
     
     pid_t pids[NUM_PLAYERS];
@@ -53,23 +48,30 @@ int main(int argc, char *argv[])
         /* TODO: spawn the processes that simulate the players */
         
         pids[i] = fork();
-        if (pids[i] < 0)
-            printf("Something went wrong\n");
+        if (pids[i] < 0) {
+            perror("Error using fork(). Exiting.");
+            exit(EXIT_FAILURE);
+        }
         else if (pids[i] != 0) {
-            close(pfds_seed[READ_FD(i)]);
-            close(pfds_score[WRITE_FD(i)]);
-        } else {
-            dup2(pfds_seed[READ_FD(i)], STDIN_FILENO);
-            dup2(pfds_score[WRITE_FD(i)], STDOUT_FILENO);
-
-            close(pfds_seed[WRITE_FD(i)]);
-            close(pfds_seed[READ_FD(i)]);
-            close(pfds_score[WRITE_FD(i)]);
-            close(pfds_score[READ_FD(i)]);
+            Close_exit_on_failure(pfds_seed[Read_fd(i)]);
+            Close_exit_on_failure(pfds_score[Write_fd(i)]);
+        }
+        else {
+            Dup2_exit_on_failure(pfds_seed[Read_fd(i)],
+                                 STDIN_FILENO);
+            Dup2_exit_on_failure(pfds_score[Write_fd(i)],
+                                 STDOUT_FILENO);
+            
+            Close_exit_on_failure(pfds_seed[Write_fd(i)]);
+            Close_exit_on_failure(pfds_seed[Read_fd(i)]);
+            Close_exit_on_failure(pfds_score[Write_fd(i)]);
+            Close_exit_on_failure(pfds_score[Read_fd(i)]);
             
             sprintf(arg1, "%d", i);
             execv(args[0], args);
-            //shooter(i, pfds_seed[READ_FD(i)], pfds_score[WRITE_FD(i)]);
+
+            perror("No return expected. Must be error with execv().");
+            exit(EXIT_FAILURE);
         } 
     }
 
@@ -77,7 +79,8 @@ int main(int argc, char *argv[])
     for (i = 0; i < NUM_PLAYERS; i++) {
         seed++;
         /* TODO: send the seed to the players */
-        write(pfds_seed[WRITE_FD(i)], &seed, sizeof(int));
+
+        Write_exit_on_failure(pfds_seed[Write_fd(i)], &seed, sizeof(int));
     }
 
     /* TODO: get the dice results from the players, find the winner */
@@ -85,7 +88,9 @@ int main(int argc, char *argv[])
     int highest = -1; 
     int score;
     for (i = 0; i < NUM_PLAYERS; i++) {
-        read(pfds_score[READ_FD(i)], &score, sizeof(int));
+
+        Read_exit_on_failure(pfds_score[Read_fd(i)], &score, sizeof(int));
+
         if (score > highest) {
             winner = i;
             highest = score;
@@ -94,11 +99,11 @@ int main(int argc, char *argv[])
     printf("master: player %d WINS\n", winner);
 
     /* TODO: signal the winner */
-    kill(pids[winner], SIGUSR1);
+    Kill_exit_on_failure(pids[winner], SIGUSR1);
     
     /* TODO: signal all players the end of game */
     for (i = 0; i < NUM_PLAYERS; i++) {
-        kill(pids[i], SIGUSR2);
+        Kill_exit_on_failure(pids[i], SIGUSR2);
     }
 
     printf("master: the game ends\n");
@@ -107,9 +112,13 @@ int main(int argc, char *argv[])
     int result;
     for (i = 0; i < NUM_PLAYERS; i++) {
         int pid = wait(&result);
-        if (pid == -1)
-            printf("Something went wrong!\n");
+        if (pid < 0) {
+            perror("Error using wait(). Exiting");
+            exit(EXIT_SUCCESS);
+        }
     }
 
+    exit(EXIT_SUCCESS);
+    
     return 0;
 }
