@@ -37,10 +37,12 @@ int main(int argc, char *argv[])
     int seed_pfd[NUM_PLAYERS][2];
     int score_pfd[NUM_PLAYERS][2];
     for (i = 0; i < NUM_PLAYERS; i++) {
+
       int seed_pipe = pipe(seed_pfd[i]);
       int score_pipe = pipe(score_pfd[i]);
+
       if ((seed_pipe < 0) || (score_pipe < 0)) {
-	printf("Failed to allocate pipes\n");
+	printf("Failed to allocate for pipes\n");
 	exit(EXIT_FAILURE);
       }
     }
@@ -52,18 +54,18 @@ int main(int argc, char *argv[])
         pid = fork();
         if (pid == -1)
             printf("Something went wrong\n");
-        else if (pid == 0) {
-	    close(seed_pfd[i][1]);
+        else
+	  if (pid != 0) { 
 	    close(seed_pfd[i][0]);
+	    close(score_pfd[i][1]);
+	  }
+	  else if (pid == 0) {
+	    close(seed_pfd[i][1]);
+	    close(score_pfd[i][0]);
             shooter(i, seed_pfd[i][0], score_pfd[i][1]);
         }
-	
     }
 
-    for (i = 0; i < NUM_PLAYERS; i++) { //?? KANSKE INTE
-	close(seed_pfd[i][1]);
-	close(seed_pfd[i][0]);
-    }
         
     seed = time(NULL);
     for (i = 0; i < NUM_PLAYERS; i++) {
@@ -79,15 +81,16 @@ int main(int argc, char *argv[])
 
     /* TODO: get the dice results from the players, find the winner */
     int max = 0;
+    int cur;
     for (i = 0; i < NUM_PLAYERS; i++) {
-      int cur;
       int receive = read(score_pfd[i][0], &cur, sizeof(int));
       if (receive < 0 ) {
 	printf("Parent failed to read from pipe\n");
 	exit(EXIT_FAILURE);
       }
-      if (max > cur) {
+      if (max < cur) {
 	winner = (pid_t) i;
+	max = cur;
       }
     }
     printf("master: player %d WINS\n", winner);
@@ -104,9 +107,9 @@ int main(int argc, char *argv[])
     /* TODO: cleanup resources and exit with success */
     int result;
     for (i = 0; i < NUM_PLAYERS; i++) {
-        int pid = wait(&result);
-        if (pid == -1)
-            printf("Something went wrong!\n");
+      int pid = wait(&result);
+      if (pid == -1)
+	printf("Something went wrong!\n");
     }
 
     return 0;
