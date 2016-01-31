@@ -30,6 +30,8 @@ shooter: shooter.o common.o
 
 clean:
 	$(RM) *~ *.o *.d
+	$(RM) craps
+	$(RM) shooter
 
 distclean:
 	$(RM) craps shooter

@@ -34,3 +34,6 @@
 # Emacs backup files
 \#*
 \.#*
+
+# Unknown
+*.d

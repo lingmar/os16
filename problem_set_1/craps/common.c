@@ -84,7 +84,7 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr) {
 
     /* TODO: roll the dice, but before that, get a seed from the parent */
     read(seed_fd_rd, &seed, sizeof(int));
-    printf("Player %d received seed %d\n", id, seed);
+    
     close(seed_fd_rd);
         
     srand(seed);
@@ -105,9 +105,7 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr) {
             id, (long)pid);
 
     /* TODO: free resources and exit with success */
-    /* printf("Entering sleep\n"); */
-    /* sleep(55); */
-    /* printf("Exiting sleep\n"); */
+    
     exit(EXIT_SUCCESS);
 }
 

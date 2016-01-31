@@ -27,29 +27,22 @@ int main(int argc, char *argv[])
 {
     int i, seed;
 
-    /* TODO: Use the following variables in the exec system call. Using the
-     * function sprintf and the arg1 variable you can pass the id parameter
-     * to the children
-     */
-    /*
-      char arg0[] = "./shooter";
-      char arg1[10];
-      char *args[] = {arg0, arg1, NULL};
-    */
+    /* TODO: Use the following variables in the exec system call. Using the */
+    /* function sprintf and the arg1 variable you can pass the id parameter */
+    /* to the children */
+    char arg0[] = "./shooter";
+    char arg1[10];
+    char *args[] = {arg0, arg1, NULL};
+    
     /* TODO: initialize the communication with the players */
     int pfds_seed[2*NUM_PLAYERS];
-    printf("%d\n", pfds_seed[0]);
-    printf("%d\n", pfds_seed[1]);
     int pfds_score[2*NUM_PLAYERS];
-    printf("%d\n", pfds_score[0]);
-    printf("%d\n", pfds_score[1]);
     
     for (i = 0; i < NUM_PLAYERS; i++) {
         printf("File %s line %d\n", __FILE__, __LINE__);
         
         if (pipe(&(pfds_seed[2 * i])) < 0 ||
             pipe(&(pfds_score[2 * i])) < 0) {
-
             perror("Something went wrong with pipe()");
             exit(EXIT_FAILURE);
         }
@@ -66,9 +59,17 @@ int main(int argc, char *argv[])
             close(pfds_seed[READ_FD(i)]);
             close(pfds_score[WRITE_FD(i)]);
         } else {
+            dup2(pfds_seed[READ_FD(i)], STDIN_FILENO);
+            dup2(pfds_score[WRITE_FD(i)], STDOUT_FILENO);
+
             close(pfds_seed[WRITE_FD(i)]);
+            close(pfds_seed[READ_FD(i)]);
+            close(pfds_score[WRITE_FD(i)]);
             close(pfds_score[READ_FD(i)]);
-            shooter(i, pfds_seed[READ_FD(i)], pfds_score[WRITE_FD(i)]);
+            
+            sprintf(arg1, "%d", i);
+            execv(args[0], args);
+            //shooter(i, pfds_seed[READ_FD(i)], pfds_score[WRITE_FD(i)]);
         } 
     }
 
@@ -76,7 +77,6 @@ int main(int argc, char *argv[])
     for (i = 0; i < NUM_PLAYERS; i++) {
         seed++;
         /* TODO: send the seed to the players */
-        printf("Sending seed %d to player %d\n", seed, i);
         write(pfds_seed[WRITE_FD(i)], &seed, sizeof(int));
     }
 
