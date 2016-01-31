@@ -76,12 +76,22 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr)
 		id, (long)pid);
 
 	/* TODO: roll the dice, but before that, get a seed from the parent */
+	int r = read(seed_fd_rd, &seed, sizeof(int));
+	if (r < 0) {
+	  printf("Child failed to read from pipe\n");
+	  exit(EXIT_FAILURE);
+	}
 
 	srand(seed);
 	score = rand() % 10000;
 	
 	fprintf(stderr, "player %d: I scored %d (PID = %ld\n", id, score, (long)pid);
 	/* TODO: send my score back */
+	int w = write(score_fd_wr, &score, sizeof(int));
+	if (w < 0) {
+	  printf("Child failed to write to pipe\n");
+	  exit(EXIT_FAILURE);
+	}
 
 	/* spin while I wait for the results */
 	while (!results) ;
@@ -93,9 +103,13 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr)
 		id, (long)pid);
 
 	/* TODO: free resources and exit with success */
+	close(seed_fd_rd);
+	close(score_fd_wr);	
+
         printf("Entering sleep\n");
         sleep(55);
         printf("Exiting sleep\n");
+	
 	exit(EXIT_SUCCESS);
 }
 
