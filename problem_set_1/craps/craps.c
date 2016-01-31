@@ -20,6 +20,9 @@
 
 #include "common.h"
 
+#define WRITE_FD(i) (2 * i + 1)
+#define READ_FD(i) (2 * i)
+
 int main(int argc, char *argv[])
 {
     int i, seed;
@@ -34,31 +37,58 @@ int main(int argc, char *argv[])
       char *args[] = {arg0, arg1, NULL};
     */
     /* TODO: initialize the communication with the players */
+    int pfds_seed[2*NUM_PLAYERS];
+    printf("%d\n", pfds_seed[0]);
+    printf("%d\n", pfds_seed[1]);
+    int pfds_score[2*NUM_PLAYERS];
+    printf("%d\n", pfds_score[0]);
+    printf("%d\n", pfds_score[1]);
+    
     for (i = 0; i < NUM_PLAYERS; i++) {
+        printf("File %s line %d\n", __FILE__, __LINE__);
+        
+        if (pipe(&(pfds_seed[2 * i])) < 0 ||
+            pipe(&(pfds_score[2 * i])) < 0) {
 
+            perror("Something went wrong with pipe()");
+            exit(EXIT_FAILURE);
+        }
     }
-
+    
     pid_t pid;
     for (i = 0; i < NUM_PLAYERS; i++) {
         /* TODO: spawn the processes that simulate the players */
         
         pid = fork();
-        if (pid == -1)
+        if (pid < 0)
             printf("Something went wrong\n");
-        else if (pid == 0)
-            shooter(i, -666, 666);
-        
+        else if (pid != 0) {
+            close(pfds_seed[READ_FD(i)]);
+            close(pfds_score[WRITE_FD(i)]);
+        } else {
+            close(pfds_seed[WRITE_FD(i)]);
+            close(pfds_score[READ_FD(i)]);
+            shooter(i, pfds_seed[READ_FD(i)], pfds_score[WRITE_FD(i)]);
+        } 
     }
 
     seed = time(NULL);
     for (i = 0; i < NUM_PLAYERS; i++) {
         seed++;
         /* TODO: send the seed to the players */
+        printf("Sending seed %d to player %d\n", seed, i);
+        write(pfds_seed[WRITE_FD(i)], &seed, sizeof(int));
     }
 
     /* TODO: get the dice results from the players, find the winner */
+    int highest = -1;
+    int score;
     for (i = 0; i < NUM_PLAYERS; i++) {
-
+        read(pfds_score[READ_FD(i)], &score, sizeof(int));
+        if (score > highest) {
+            winner = i;
+            highest = score;
+        }
     }
     printf("master: player %d WINS\n", winner);
 
