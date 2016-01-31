@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <assert.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -22,7 +23,7 @@
 volatile sig_atomic_t winner = 0;
 /* TODO: Change this to 0 to make the children spin in the for loop before they
    receive the SIGUSR2 signal */
-volatile sig_atomic_t results = 1;
+volatile sig_atomic_t results = 0;
 
 /**
  * end_handler - handle the SIGUSR2 signal, the player will receive
@@ -32,10 +33,13 @@ volatile sig_atomic_t results = 1;
 void end_handler(int signum)
 {
     /* TODO: Check that the signum is indeed SIGUSR2 */
-	
+    assert(signum == SIGUSR2 &&
+           "signum must be SIGUSR2 in function end_handler()");
+    
     /* TODO: "leave the game" make the appropriate changes to let the
        current process exit*/
-
+    results = 1;
+    
     signal(signum, end_handler);
 }
 
@@ -47,10 +51,13 @@ void end_handler(int signum)
 void win_handler(int signum)
 {
     /* TODO - Check that the signum is indeed SIGUSR1 */
-
+    assert(signum == SIGUSR1 &&
+           "signum must be SIGUSR1 in function win_handler");
+    
     /* TODO - this player is the winner, make the appropriate changes
        upon reception of this singal */
-
+    winner = 1;
+    
     signal(signum, win_handler);
 }
 
@@ -61,15 +68,15 @@ void win_handler(int signum)
  * @seed_rd_fd: file descriptor of the pipe used to read the seed from 
  * @score_wr_fd: file descriptor of the pipe used to write the scores to
  */
-void shooter(int id, int seed_fd_rd, int score_fd_wr)
-{
+void shooter(int id, int seed_fd_rd, int score_fd_wr) {
     pid_t pid;
     int score, seed = 0;
 
     /* TODO: Install SIGUSR1 handler */
-
+    signal(SIGUSR1, win_handler);
+    
     /* TODO: Install SIGUSR2 handler */
-
+    signal(SIGUSR2, end_handler);
 
     pid = getpid();
     fprintf(stderr, "player %d: I'm in this game (PID = %ld)\n",

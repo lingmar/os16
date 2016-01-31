@@ -55,14 +55,14 @@ int main(int argc, char *argv[])
         }
     }
     
-    pid_t pid;
+    pid_t pids[NUM_PLAYERS];
     for (i = 0; i < NUM_PLAYERS; i++) {
         /* TODO: spawn the processes that simulate the players */
         
-        pid = fork();
-        if (pid < 0)
+        pids[i] = fork();
+        if (pids[i] < 0)
             printf("Something went wrong\n");
-        else if (pid != 0) {
+        else if (pids[i] != 0) {
             close(pfds_seed[READ_FD(i)]);
             close(pfds_score[WRITE_FD(i)]);
         } else {
@@ -81,7 +81,8 @@ int main(int argc, char *argv[])
     }
 
     /* TODO: get the dice results from the players, find the winner */
-    int highest = -1;
+    /* FIXME: is the results always positive? */
+    int highest = -1; 
     int score;
     for (i = 0; i < NUM_PLAYERS; i++) {
         read(pfds_score[READ_FD(i)], &score, sizeof(int));
@@ -93,10 +94,11 @@ int main(int argc, char *argv[])
     printf("master: player %d WINS\n", winner);
 
     /* TODO: signal the winner */
-
+    kill(pids[winner], SIGUSR1);
+    
     /* TODO: signal all players the end of game */
     for (i = 0; i < NUM_PLAYERS; i++) {
-
+        kill(pids[i], SIGUSR2);
     }
 
     printf("master: the game ends\n");
