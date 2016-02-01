@@ -75,12 +75,8 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr) {
 
     /* TODO: Install SIGUSR1 handler */
     /* TODO: Install SIGUSR2 handler */
-    if (signal(SIGUSR1, win_handler) == SIG_ERR ||
-        signal(SIGUSR2, end_handler)) {
-
-        perror("Error using signal(). Exiting.");
-        exit(EXIT_FAILURE);
-    }
+    signal_exit_on_failure(signum, end_handler);
+    signal_exit_on_failure(signum, win_handler);
     
     pid = getpid();
     fprintf(stderr, "player %d: I'm in this game (PID = %ld)\n",
