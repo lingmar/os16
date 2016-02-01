@@ -41,7 +41,7 @@ void end_handler(int signum)
        current process exit*/
     results = 1;
 
-    Signal_exit_on_failure(signum, end_handler);
+    signal_exit_on_failure(signum, end_handler);
 }
 
 /**
@@ -59,7 +59,7 @@ void win_handler(int signum)
        upon reception of this singal */
     winner = 1;
     
-    Signal_exit_on_failure(signum, win_handler);
+    signal_exit_on_failure(signum, win_handler);
 }
 
 
@@ -87,17 +87,17 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr) {
             id, (long)pid);
 
     /* TODO: roll the dice, but before that, get a seed from the parent */
-    Read_exit_on_failure(seed_fd_rd, &seed, sizeof(int));
+    read_exit_on_failure(seed_fd_rd, &seed, sizeof(int));
     
-    Close_exit_on_failure(seed_fd_rd);
+    close_exit_on_failure(seed_fd_rd);
         
     srand(seed);
     score = rand() % 10000;
 	
     fprintf(stderr, "player %d: I scored %d (PID = %ld\n", id, score, (long)pid);
     /* TODO: send my score back */
-    Write_exit_on_failure(score_fd_wr, &score, sizeof(int));
-    Close_exit_on_failure(score_fd_wr);
+    write_exit_on_failure(score_fd_wr, &score, sizeof(int));
+    close_exit_on_failure(score_fd_wr);
         
     /* spin while I wait for the results */
     while (!results) ;

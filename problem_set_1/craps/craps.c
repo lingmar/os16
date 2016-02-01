@@ -39,8 +39,8 @@ int main(int argc, char *argv[]) {
     int pfds_score[2*NUM_PLAYERS];
     
     for (i = 0; i < NUM_PLAYERS; i++) {
-        Pipe_exit_on_failure(&(pfds_seed[2 * i]));
-        Pipe_exit_on_failure(&(pfds_score[2 * i]));
+        pipe_exit_on_failure(&(pfds_seed[2 * i]));
+        pipe_exit_on_failure(&(pfds_score[2 * i]));
     }
     
     pid_t pids[NUM_PLAYERS];
@@ -53,19 +53,19 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
         else if (pids[i] != 0) {
-            Close_exit_on_failure(pfds_seed[Read_fd(i)]);
-            Close_exit_on_failure(pfds_score[Write_fd(i)]);
+            close_exit_on_failure(pfds_seed[Read_fd(i)]);
+            close_exit_on_failure(pfds_score[Write_fd(i)]);
         }
         else {
-            Dup2_exit_on_failure(pfds_seed[Read_fd(i)],
+            dup2_exit_on_failure(pfds_seed[Read_fd(i)],
                                  STDIN_FILENO);
-            Dup2_exit_on_failure(pfds_score[Write_fd(i)],
+            dup2_exit_on_failure(pfds_score[Write_fd(i)],
                                  STDOUT_FILENO);
             
-            Close_exit_on_failure(pfds_seed[Write_fd(i)]);
-            Close_exit_on_failure(pfds_seed[Read_fd(i)]);
-            Close_exit_on_failure(pfds_score[Write_fd(i)]);
-            Close_exit_on_failure(pfds_score[Read_fd(i)]);
+            close_exit_on_failure(pfds_seed[Write_fd(i)]);
+            close_exit_on_failure(pfds_seed[Read_fd(i)]);
+            close_exit_on_failure(pfds_score[Write_fd(i)]);
+            close_exit_on_failure(pfds_score[Read_fd(i)]);
             
             sprintf(arg1, "%d", i);
             execv(args[0], args);
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
         seed++;
         /* TODO: send the seed to the players */
 
-        Write_exit_on_failure(pfds_seed[Write_fd(i)], &seed, sizeof(int));
+        write_exit_on_failure(pfds_seed[Write_fd(i)], &seed, sizeof(int));
     }
 
     /* TODO: get the dice results from the players, find the winner */
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
     int score;
     for (i = 0; i < NUM_PLAYERS; i++) {
 
-        Read_exit_on_failure(pfds_score[Read_fd(i)], &score, sizeof(int));
+        read_exit_on_failure(pfds_score[Read_fd(i)], &score, sizeof(int));
 
         if (score > highest) {
             winner = i;
@@ -99,11 +99,11 @@ int main(int argc, char *argv[]) {
     printf("master: player %d WINS\n", winner);
 
     /* TODO: signal the winner */
-    Kill_exit_on_failure(pids[winner], SIGUSR1);
+    kill_exit_on_failure(pids[winner], SIGUSR1);
     
     /* TODO: signal all players the end of game */
     for (i = 0; i < NUM_PLAYERS; i++) {
-        Kill_exit_on_failure(pids[i], SIGUSR2);
+        kill_exit_on_failure(pids[i], SIGUSR2);
     }
 
     printf("master: the game ends\n");
