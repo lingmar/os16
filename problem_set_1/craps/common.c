@@ -12,11 +12,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <assert.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
 
 #include "common.h"
+#include "system_calls.h"
 
 /* These flags control the termination of the main loop and indicate the winner. */
 volatile sig_atomic_t winner = 0;
@@ -31,14 +33,15 @@ volatile sig_atomic_t results = 0;
  */
 void end_handler(int signum)
 {
-  /* TODO: Check that the signum is indeed SIGUSR2 */
-  if (signum == SIGUSR2){
-
-  /* TODO: "leave the game" make the appropriate changes to let the
-      current process exit*/
+    /* TODO: Check that the signum is indeed SIGUSR2 */
+    assert(signum == SIGUSR2 &&
+           "signum must be SIGUSR2 in function end_handler()");
+    
+    /* TODO: "leave the game" make the appropriate changes to let the
+       current process exit*/
     results = 1;
-    signal(signum, end_handler); 
-  }
+
+    signal_exit_on_failure(signum, end_handler);
 }
 
 
@@ -49,14 +52,15 @@ void end_handler(int signum)
  */
 void win_handler(int signum)
 {
-  /* TODO - Check that the signum is indeed SIGUSR1 */
-  if (signum == SIGUSR1) {
-  /* TODO - this player is the winner, make the appropriate changes
-     upon reception of this singal */
+    /* TODO - Check that the signum is indeed SIGUSR1 */
+    assert(signum == SIGUSR1 &&
+           "signum must be SIGUSR1 in function win_handler");
+    
+    /* TODO - this player is the winner, make the appropriate changes
+       upon reception of this singal */
     winner = 1;
-
-    signal(signum, win_handler);  
-  }
+    
+    signal_exit_on_failure(signum, win_handler);
 }
 
 
@@ -66,52 +70,45 @@ void win_handler(int signum)
  * @seed_rd_fd: file descriptor of the pipe used to read the seed from 
  * @score_wr_fd: file descriptor of the pipe used to write the scores to
  */
-void shooter(int id, int seed_fd_rd, int score_fd_wr)
-{
-  
-  pid_t pid;
-  int score, seed = 0;
 
-  /* TODO: Install SIGUSR1 handler */
-  signal(SIGUSR1, win_handler);
+void shooter(int id, int seed_fd_rd, int score_fd_wr) {
+    pid_t pid;
+    int score, seed = 0;
 
-  /* TODO: Install SIGUSR2 handler */
-  signal(SIGUSR2, end_handler);
+    /* TODO: Install SIGUSR1 handler */
+    /* TODO: Install SIGUSR2 handler */
+    signal_exit_on_failure(SIGUSR2, end_handler);
+    signal_exit_on_failure(SIGUSR1, win_handler);
+    
+    pid = getpid();
+    fprintf(stderr, "player %d: I'm in this game (PID = %ld)\n",
+            id, (long)pid);
 
-  pid = getpid();
-  fprintf(stderr, "player %d: I'm in this game (PID = %ld)\n",
-	  id, (long)pid);
-
-  /* TODO: roll the dice, but before that, get a seed from the parent */
-  read(seed_fd_rd, &seed, sizeof(int));
-  close(seed_fd_rd);
-  
-
-  srand(seed);
-  score = rand() % 10000;
+    /* TODO: roll the dice, but before that, get a seed from the parent */
+    read_exit_on_failure(seed_fd_rd, &seed, sizeof(int));
+    
+    close_exit_on_failure(seed_fd_rd);
+        
+    srand(seed);
+    score = rand() % 10000;
 	
-  fprintf(stderr, "player %d: I scored %d (PID = %ld)\n", id, score, (long)pid);
-  /* TODO: send my score back */
-  write(score_fd_wr, &score, sizeof(int));
-  close(score_fd_wr);
-  
- 
-  /* spin while I wait for the results */
-  while (!results) ;  
+    fprintf(stderr, "player %d: I scored %d (PID = %ld\n", id, score, (long)pid);
+    /* TODO: send my score back */
+    write_exit_on_failure(score_fd_wr, &score, sizeof(int));
+    close_exit_on_failure(score_fd_wr);
+        
+    /* spin while I wait for the results */
+    while (!results) ;
 
-  if (winner)
-    fprintf(stderr, "player %d: Walking away rich\n", id);
+    if (winner)
+        fprintf(stderr, "player %d: Walking away rich\n", id);
 
-  fprintf(stderr, "player %d: Leaving the game (PID = %ld)\n",
-	  id, (long)pid);
-
-  /* TODO: free resources and exit with success */
-	
-  /* printf("Entering sleep\n");
-  sleep(55);
-  printf("Exiting sleep\n");*/
-  
-  exit(EXIT_SUCCESS);
+    fprintf(stderr, "player %d: Leaving the game (PID = %ld)\n",
+            id, (long)pid);
+    
+    /* TODO: free resources and exit with success */
+    
+    exit(EXIT_SUCCESS);
 }
 
 /**

@@ -24,12 +24,14 @@ endif
 
 all: craps shooter
 
-craps: craps.o common.o
+craps: craps.o common.o system_calls.o
 
-shooter: shooter.o common.o
+shooter: shooter.o common.o system_calls.o
 
 clean:
 	$(RM) *~ *.o *.d
+	$(RM) craps
+	$(RM) shooter
 
 distclean:
 	$(RM) craps shooter
