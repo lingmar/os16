@@ -44,6 +44,7 @@ void end_handler(int signum)
     signal_exit_on_failure(signum, end_handler);
 }
 
+
 /**
  * win_handler - handle the SIGUSR1 signal, player will receive the SIGUSR1 when
  * he is the winner
@@ -69,6 +70,7 @@ void win_handler(int signum)
  * @seed_rd_fd: file descriptor of the pipe used to read the seed from 
  * @score_wr_fd: file descriptor of the pipe used to write the scores to
  */
+
 void shooter(int id, int seed_fd_rd, int score_fd_wr) {
     pid_t pid;
     int score, seed = 0;
@@ -118,13 +120,13 @@ void shooter(int id, int seed_fd_rd, int score_fd_wr) {
  */
 void waitstat(pid_t pid, int status)
 {
-    if (WIFEXITED(status))
-        fprintf(stderr, "Child with PID = %ld terminated normally, exit"
-                " status = %d\n", (long)pid, WEXITSTATUS(status));
-    else {
-        fprintf(stderr, "%s: Internal error: Unhandled case, PID = %ld,"
-                " status = %d\n", __func__, (long)pid, status);
-        exit(1);
-    }
-    fflush(stderr);
+  if (WIFEXITED(status))
+    fprintf(stderr, "Child with PID = %ld terminated normally, exit"
+	    " status = %d\n", (long)pid, WEXITSTATUS(status));
+  else {
+    fprintf(stderr, "%s: Internal error: Unhandled case, PID = %ld,"
+	    " status = %d\n", __func__, (long)pid, status);
+    exit(1);
+  }
+  fflush(stderr);
 }

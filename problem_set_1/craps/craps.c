@@ -18,6 +18,8 @@
 #include <sys/types.h> /* pid */
 #include <sys/wait.h> /* waitpid() */
 
+#include <string.h>
+
 #include "common.h"
 #include "system_calls.h"
 
@@ -106,7 +108,8 @@ int main(int argc, char *argv[]) {
         kill_exit_on_failure(pids[i], SIGUSR2);
     }
 
-    printf("master: the game ends\n");
+  printf("master: the game ends\n");
+
 
     /* TODO: cleanup resources and exit with success */
     int result;
