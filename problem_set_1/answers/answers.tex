@@ -29,33 +29,33 @@
 
 \section{Operating systems}
 \begin{enumerate}
-  \item \textit{What is the overall purpose of an operating system?} 
+  \item \textit{What is the overall purpose of an operating system?} \\
     An important task of the operating system is to schedule user and system processes and handle commands from the user. When scheduling processes, the operating system can create the appearance that processes are run concurrently. It is the layer between the user space and the hardware.
-  \item \textit{How can the operating system make several programs execute seemingly "at the same time"?}
+  \item \textit{How can the operating system make several programs execute seemingly "at the same time"?} \\
     The operating system can swap which process is currently executed very quickly. This creates the appearance that the processes are run simultaneously.
 \end{enumerate}
 
 \section{Processes}
 \begin{enumerate}
-  \item \textit{What is the difference between a program and a process?}
+  \item \textit{What is the difference between a program and a process?} \\
     A program is a set of instructions which is in human readable format. It is a passive entity stored on secondary storage. In comparison, a process is an active entity that needs resources such as memory and CPU time. A process is a program loaded into memory, either executing or waiting.
-  \item \textit{What does the acronym PCB stand for?}
+  \item \textit{What does the acronym PCB stand for?} \\
     Process control block.
-  \item \textit{Whats the purpose of the PCB?}
+  \item \textit{Whats the purpose of the PCB?} \\
     The purpose is to store information needed to manage the process, such as the pid of the process. 
 \end{enumerate}
 
 \section{System calls}
 \begin{enumerate}
-  \item \textit{What is the overall purpose of the system call concept? }
+  \item \textit{What is the overall purpose of the system call concept? } \\
     The purpose is to interact directly with the operating system. It provides an interface to the services made available by an operating system.
-  \item \textit{Why are exceptions important when implementing system calls?}
+  \item \textit{Why are exceptions important when implementing system calls?} \\
     System calls are initiated using exceptions. 
-  \item \textit{Why are interrupts important when implementing system calls?}
+  \item \textit{Why are interrupts important when implementing system calls?} \\
     System calls generate an interrupt, which invokes the attention of the operating system, so that the system call can be executed.
-  \item \textit{Why can't we simply use ordinary function calls when implementing system calls?}
+  \item \textit{Why can't we simply use ordinary function calls when implementing system calls?} \\
     A call to an ordinary function is a call to a piece of code in user space, and does not have the same acces rights as a system call. So when it is necessary to execute some tasks which must be performed by the operating system, a system call is needed.
-  \item \textit{What is the difference between the system call interface and the actual system calls?}
+  \item \textit{What is the difference between the system call interface and the actual system calls?} \\
     A system call interface is an abstraction for a given programming language, and acts as a link to the actual system calls. The caller need not know exactly how a system call is implemented, only how to use it via the interface and what the result is when making the system call.
   \item \textit{A common pattern when using system calls is for the caller to first allocate storage and then pass a pointer to this storage to the system call - why? } \\ 
     It gives the caller a choice in where to store the result of the system call.
@@ -98,7 +98,7 @@
     The PID of the exited child process is returned.
   \item \textit{How can the exit status of a terminated process be retrieved using the wait() system call?} \\
     The exit status is written to the address pointed to by the argument given to wait().
-  \item \textit{How is wait() related to the  "zombie" process state?} \\
+  \item \textit{Hos is wait() related to the  "zombie" process state?} \\
     Since wait() reads the exit status of the exited process, it "de-zombifies" the zombie process.
 \end{enumerate}
 
@@ -168,15 +168,14 @@
   \item \textit{ How is it possible for rand() to return different values on consequitve calls?} \\
     The value used to compute the return value is updated every time rand() is called. 
   \item \textit{A parent process calls srand() to seed the pseduo random generator (PRNG) and then uses fork() to create a number of child processes. Each child generates a sequence of "random" number by calling rand(). Can you make any predictions (motivate) about the sequences?} \\
-    {\color{read} TODO}
-    
+    Assuming that the rand() is just a number of calculations, all children will generate the same number, since they have the same seed.      
   
 \end{enumerate}
 
 \section{Reentrant code}
 \begin{enumerate}
-\item \textit{What is meant by reentrant code?}
-      {\color{read} TODO}
+\item \textit{What is meant by reentrant code?} \\
+  Code that can safely be interrupted and then continue again, without the information having been corrupted or changed by another process. Reentrent code can be shared by several different processes concurrently.
 \end{enumerate}
 
 

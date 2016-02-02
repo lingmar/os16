@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
         kill_exit_on_failure(pids[i], SIGUSR2);
     }
 
-  //printf("master: the game ends\n");
+  printf("master: the game ends\n");
 
 
     /* TODO: cleanup resources and exit with success */
