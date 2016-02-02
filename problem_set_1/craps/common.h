@@ -15,6 +15,8 @@
 #include <unistd.h>
 
 #define NUM_PLAYERS 6
+#define WRITE_FD(i) (2 * i + 1)
+#define READ_FD(i) (2 * i)
 
 void shooter(int pid, int seed_fd_rd, int score_fd_write);
 void waitstat(pid_t pid, int status);
