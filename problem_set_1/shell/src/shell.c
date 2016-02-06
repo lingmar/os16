@@ -80,8 +80,14 @@ int main(void) {
     
     num_of_children = execute_command_line(command_line_buffer, argv);
 
+    int status;
+    int ret;
     for (int i = 0; i < num_of_children; i ++) {
-      // TODO 1: Make the parent wait for all children. 
+      ret = wait(&status);
+      if (ret < 0) {
+	perror("Something went wrong.\n");
+	exit(EXIT_FAILURE);
+      }
     }
 
 
@@ -155,11 +161,15 @@ int execute_command_line(char *line, char *argv[]) {
 }
 
 
-void create_pipe(enum cmd_pos pos, int new_pipe[]) {
-
+void create_pipe(enum cmd_pos pos, int new_pipe[]) {  
   // TODO 2: If there are more than one command in the pipeline,
   //         create a pipe for all but the last command.
-  
+  if (pos != last && pos != single) {
+    int ret = pipe(new_pipe);
+    if (ret < 0) { 
+      exit(EXIT_FAILURE);
+    }
+  }
     
 }
 
@@ -206,8 +216,13 @@ void fork_child(enum cmd_pos pos, int left_pipe[], int right_pipe[], char *argv[
 void parent_close_pipes(enum cmd_pos pos, int left_pipe[], int right_pipe[]) {
 
   // TODO 3: The parent must close un-used pipe descriptors. You need
-  // to figure out wich descriptors that must be closes when.
-
+  // to figure out wich descriptors that must be closed when.
+  /*if (pos == first) {
+    close(left_pipe[1]);
+  }*/
+  close(left_pipe[0]);
+  //  close(right_pipe[0]);
+  close(right_pipe[1]);
 
 }
 
@@ -217,9 +232,20 @@ void child_redirect_io(enum cmd_pos pos, int left_pipe[], int right_pipe[]) {
   // TODO 4: A child may need to redirect STDIN to read from the left
   // pipe and STDOUT to write to the right pipe depending on the
   // position in the pipeline.
- 
-
-
+  if (pos == first) {
+    dup2(right_pipe[1], STDOUT_FILENO);
+  }
+  else if (pos == middle) {
+    dup2(left_pipe[0], STDIN_FILENO);
+    dup2(right_pipe[1], STDOUT_FILENO);
+  }
+  else if (pos == last) {
+    dup2(left_pipe[0], STDIN_FILENO);
+  }
+  else if (pos != single) {
+    perror("Something went wrong. Couldn't redirect pipes.\n");
+    exit(EXIT_FAILURE);
+  }
 }
 
 void execute_command(char *argv[]) {
