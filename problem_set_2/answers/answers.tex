@@ -1,0 +1,165 @@
+\documentclass[a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{url}
+
+\usepackage[xetex, colorlinks=true,
+            linkcolor=blue, citecolor=blue,
+            urlcolor=blue,breaklinks]{hyperref}
+
+\usepackage[swedish]{babel}
+\usepackage[babel]{csquotes}
+\usepackage[margin=2.5cm]{geometry}
+
+\usepackage{fontspec}
+\usepackage{xunicode}
+
+
+% \usepackage[bottom=0.5in,top=1.5in]{geometry}
+% \usepackage[swedish]{babel}
+% \usepackage[T1]{fontenc}
+% \usepackage[utf8]{inputenc}
+% \usepackage{hyperref}
+% \usepackage{amsmath}
+% \usepackage{anysize}
+% \marginsize{2.1cm}{2.5cm}{2.1cm}{1.5cm}
+% \usepackage{geometry}
+% \usepackage{graphicx}
+% \usepackage{enumitem}
+% \usepackage{listings}
+% \usepackage{color}
+
+% \definecolor{dkgreen}{rgb}{0,0.6,0}
+% \definecolor{gray}{rgb}{0.5,0.5,0.5}
+% \definecolor{mauve}{rgb}{0.58,0,0.82}
+
+% \lstset{%frame=tb,
+%   language=Java,
+%   aboveskip=3mm,
+%   belowskip=3mm,
+%   showstringspaces=false,
+%   columns=flexible,
+%   basicstyle={\small\ttfamily},
+%   numbers=none,
+%   numberstyle=\tiny\color{gray},
+%   keywordstyle=\color{blue},
+%   commentstyle=\color{dkgreen},
+%   stringstyle=\color{mauve},
+%   breaklines=true,
+%   breakatwhitespace=true,
+%   tabsize=4
+% }
+
+
+\title{\textbf{Operating systems \\
+    Problem set II \\
+    Uppsala University -- Spring 2016 \\}}
+\author{Linnea Ingmar \\
+  Elsa Rick} 
+\date{\today}
+\begin{document}
+\maketitle
+
+\section{Threads vs processes}
+\begin{enumerate}
+  \item \textit{What is the difference between processes and threads?} \\
+  \item \textit{ Why is it "more expensive" to create a new process compared to create a new thread?} \\
+\end{enumerate}
+
+\section{Random numbers}
+ \begin{enumerate}
+    \item \textit{What happens when two or more threads call rand() and how is this different compared problem set 1 where we used rand() together with fork()?} \\
+    \item \textit{What is the difference between rand() and rand\_r()?}\\
+ \end{enumerate}
+
+\section{Need for synchronization}
+\begin{enumerate}
+  \item \textit{ Why do concurrent access to shared memory need to be synchronized? }\\
+  \item  \textit{What is meant by a race condition (aka data race)? }\\
+\end{enumerate}
+
+\section{Software based synchronization}
+\begin{enumerate}
+  \item  \textit{What are the problems with Petersson's solution? }\\
+\end{enumerate}
+
+
+\section{Hardware support for synchronization}
+\begin{enumerate}
+  \item  \textit{Name two atomic instructions that can be used to implement mutex locks. }\\
+  \item \textit{ What is meant by busy waiting? }\\
+  \item \textit{ How can spin locks be constructed using the atomic instructions from above? }\\
+\end{enumerate}
+
+\section{Abstractions for synchronization}
+\begin{enumerate}
+  \item \textit{ What is a mutex lock? }\\
+  \item \textit{ What operations can be performed on a semaphore and how do these operations work? }\\
+  \item \textit{ What is the difference between a mutex lock and a semaphore? }\\
+  \item \textit{ How can busy waiting be avoided? }\\
+  \item \textit{ How does the Java synchronized keyword work? }\\
+  \item \textit{ How is this different compared to using semaphores? }\\
+  \item \textit{ How is this different compared to using mutex locks? }\\
+  \item \textit{ What is a monitor? }\\
+  \item \textit{ What problem with monitors is addressed by condition variables? }\\
+  \item \textit{ What is the difference between blocking (Hoare style) and non-blocking (Mesa style) condition variables? }\\
+  \item \textit{ What is a semaphore? }\\
+\end{enumerate}
+
+\section{Deadlock}
+\begin{enumerate}
+  \item \textit{ What is meant by a deadlock? }\\
+  \item \textit{ What are the four necessary conditions for deadlocks to occur? }\\
+  \item  \textit{What is the difference between deadlock prevention and deadlock avoidance? }\\
+  \item \textit{ Given a bank with numbered bank accounts, we have a function that transfers money from account A to account B. One way of writing the function is given below.} \\
+
+
+\begin{lstlisting}
+  transfer (A, B, amount) // A and B are bank account numbers
+{
+    lock_account (A);
+    lock_account (B);
+    withdraw amount from account A;
+    deposit amount into account B;
+    unlock_account (B);
+    unlock_account (A);
+}
+\end{lstlisting}
+
+\textit{One problem with this solution is that deadlocks can occur; for example, if two threads both do the following operations concurrently:}
+
+\begin{lstlisting}
+  transfer (1, 2, 200);
+  transfer (2, 1, 100);
+\end{lstlisting}
+
+\textit{In this case, a deadlock happens if each thread locks one account while waiting for the other thread to unlock the other account.}
+
+\textit{How can you change the transfer() function to prevent deadlocks?}
+\end{enumerate}
+
+\section{Starvation}
+\begin{enumerate}
+  \item \textit{What is meant by starvation?}
+\end{enumerate}
+
+\section{Bounded buffer}
+\begin{enumerate}
+  \item \textit{How can semaphores be used to synchronize access to a bounded buffer?} \\
+\end{enumerate}
+
+
+\section{Dining philosophers}
+\begin{enumerate}
+  \item \textit{When solving the Dining philosophers problem, how can:} \\
+    \begin{enumerate}
+      \item \textit{Deadlocks be avoided? More than one solution?} \\
+      \item \textit{Starvation be avoided? More than one solution?} \\
+    \end{enumerate}
+\end{enumerate}
+
+\end{document}
