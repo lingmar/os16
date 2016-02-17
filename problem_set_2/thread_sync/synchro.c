@@ -40,7 +40,9 @@ inc_mutex(void *arg __attribute__((unused)))
 
     /* TODO 1: Protect access to the shared variable */
     for (i = 0; i < INC_ITERATIONS; i++) {
+        pthread_mutex_lock(&mutex);
         counter += INCREMENT;
+        pthread_mutex_unlock(&mutex);
     }
 
     return NULL;
@@ -53,7 +55,9 @@ dec_mutex(void *arg __attribute__((unused)))
 
     /* TODO 1: Protect access to the shared variable */
     for (i = 0; i < DEC_ITERATIONS; i++) {
+        pthread_mutex_lock(&mutex);
         counter -= DECREMENT;
+        pthread_mutex_unlock(&mutex);
     }
 
     return NULL;
@@ -69,8 +73,11 @@ inc_cas(void *arg __attribute__((unused)))
 
     /* TODO 2: Use the compare and swap primitive to manipulate the shared
      * variable */
+    int oldval = counter;
     for (i = 0; i < INC_ITERATIONS; i++) {
-        counter += INCREMENT; // You need to replace this
+        do {
+            oldval = counter;
+        }while (! __sync_bool_compare_and_swap(&counter, oldval, oldval + INCREMENT));
     }
 
     return NULL;
@@ -83,8 +90,11 @@ dec_cas(void *arg __attribute__((unused)))
 
     /* TODO 2: Use the compare and swap primitive to manipulate the shared
      * variable */
+    int oldval = counter;
     for (i = 0; i < DEC_ITERATIONS; i++) {
-        counter += DECREMENT; // You need to replace this
+        do {
+            oldval = counter;
+        }while(!__sync_bool_compare_and_swap(&counter, oldval, oldval - DECREMENT));
     }
 
     return NULL;
@@ -100,8 +110,8 @@ inc_atomic(void *arg __attribute__((unused)))
 
     /* TODO 3: Use atomic primitives to manipulate the shared variable */
     for (i = 0; i < INC_ITERATIONS; i++) {
-        counter += DECREMENT; // You need to replace this
-    }
+        __sync_add_and_fetch(&counter, INCREMENT);
+     }
 
     return NULL;
 }
@@ -113,7 +123,7 @@ dec_atomic(void *arg __attribute__((unused)))
 
     /* TODO 3: Use atomic primitives to manipulate the shared variable */
     for (i = 0; i < DEC_ITERATIONS; i++) {
-        counter += DECREMENT; // You need to replace this
+        __sync_sub_and_fetch(&counter, DECREMENT);
     }
 
     return NULL;
