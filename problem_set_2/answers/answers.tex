@@ -156,6 +156,10 @@
 \section{Abstractions for synchronization}
 \begin{enumerate}
 
+    \item \textit{ What is a semaphore? }\\
+
+    It is a synchronization tool to provide mutual exclusion.
+
   \item \textit{ What is a mutex lock? }\\
 
     It is a binary semaphore that provides mutual exclusion access to a critical section. 
@@ -200,9 +204,6 @@ on variables? }\\
 
     Blocking condition variables (Hoare style) give priority to a signaled thread when signal() or wait() is called. Non-blocking condition variables (Mesa style) give priority to the signaling thread.
 
-  \item \textit{ What is a semaphore? }\\
-
-    It is a synchronization tool to provide mutual exclusion.
 \end{enumerate}
 
 \section{Deadlock}
