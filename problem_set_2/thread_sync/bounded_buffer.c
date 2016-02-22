@@ -32,10 +32,14 @@ buffer_t buffer;
 
 pthread_t consumer_tid[CONSUMERS], producer_tid[PRODUCERS];
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+sem_t fullB;
+sem_t emptyB;
+
 /* *
  * insert_item - thread safe(?) function to insert items to the bounded buffer
  * @param item the value to be inserted
- * @return 0 in case of sucess -1 otherwise
+ * @return 0 in case of success -1 otherwise
  */
 int
 insert_item(int item)
@@ -44,10 +48,14 @@ insert_item(int item)
      * access to the buffer and use the existing code to remove an item.
      */
 
+    sem_wait(&emptyB);
+    pthread_mutex_lock(&mutex);
 
     buffer.value[buffer.next_in] = item;
     buffer.next_in = (buffer.next_in + 1) % BUFFER_SIZE;
-
+    
+    sem_post(&fullB);
+    pthread_mutex_unlock(&mutex);
 
     return 0;
 }
@@ -64,10 +72,17 @@ remove_item(int *item)
      * access to the buffer and use the existing code to remove an item.
      */
 
+    sem_wait(&fullB);
+    pthread_mutex_lock(&mutex);
 
     *item = buffer.value[buffer.next_out];
     buffer.value[buffer.next_out] = -1;
     buffer.next_out = (buffer.next_out + 1) % BUFFER_SIZE;
+
+
+    sem_post(&emptyB);
+    pthread_mutex_unlock(&mutex);
+
 
     return 0;
 }
@@ -88,7 +103,7 @@ producer(void *param)
     printf("producer started\n");
     i = PRODUCER_ITERATIONS;
     while (i--) {
-	sleep(rand() % 3);
+	//sleep(rand() % 3);
 
 	item = rand() % 10000;
 	if (insert_item(item))
@@ -116,7 +131,7 @@ consumer(void *param)
     printf("consumer started\n");
     i = CONSUMER_ITERATIONS;
     while (i--) {
-	sleep(rand() % 3);
+	//sleep(rand() % 3);
 
 	if (remove_item(&item))
 	    fprintf(stderr, "Error while removing from buffer\n");
@@ -131,6 +146,10 @@ int
 main()
 {
     long int i;
+
+    sem_init(&fullB, 0, 0);
+    sem_init(&emptyB, 0, BUFFER_SIZE);
+
 
     srand(time(NULL));
 
@@ -159,6 +178,8 @@ main()
 	    abort();
 	}
 
+    sem_destroy(&fullB);
+    sem_destroy(&emptyB);
 
     return 0;
 }
